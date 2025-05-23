@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+   <!-- 직원 전체조회 - v selectAllEmp
+    직원 상세조회 - v selectByIdEmp
+    직원 등록 - v insertEmp
+    직원 수정 - v modifyEmp
+    직원 삭제 - v deleteEmp
+    보통 quert.xml이랑 dao랑 목록이 같구나 -->
+    <entry key="selectAllEmp">
+        SELECT *
+          FROM employee A
+    </entry>
+    <!-- chap02-section02-Appliction6-line37참고-->
+
+    <entry key="selectByIdEmp">
+        SELECT A.EMP_ID,
+               A.EMP_NAME
+        FROM employee A
+    </entry>
+
+    <entry key="insertEmp">
+        INSERT INTO EMPLOYEE
+        (
+         EMP_ID,
+         EMP_NAME,
+         EMP_NO,
+         JOB_CODE,
+         SAL_LEVEL
+        )
+        VALUES
+        (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+        )
+    </entry>
+
+    <entry key="modifyEmp">
+        UPDATE EMPLOYEE
+           SET
+            DEPT_CODE = ?,
+            JOB_CODE = ?,
+            SAL_LEVEL= ?
+         WHERE EMP_ID = ?
+
+    </entry>
+
+    <entry key="deleteEmp">
+        DELETE
+          FROM EMPLOYEE
+         WHERE EMP_ID = ?
+    </entry>
+</properties>
