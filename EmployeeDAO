@@ -1,0 +1,179 @@
+package com.ohgiraffers.model.dao;
+
+import com.ohgiraffers.model.dto.EmployeeDTO;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
+
+import static com.ohgiraffers.common.JDBCTemplate.close;
+
+public class EmployeeDAO {
+    private Properties prop = new Properties();
+
+    public EmployeeDAO() {
+        try {
+            prop.loadFromXML(new FileInputStream("src/main/java/com/ohgiraffers/mapper/employee-query.xml"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public List<EmployeeDTO> selectAllEmp(Connection con) {
+        Statement stmt = null;
+        ResultSet rset = null;
+
+        List<EmployeeDTO> empList = null;
+
+        String query = prop.getProperty("selectAllEmp");
+
+        try {
+            stmt = con.createStatement();
+            rset = stmt.executeQuery(query);
+
+            empList = new ArrayList<>();
+
+            // 한 줄 이상이니까 if 말고 while문으로
+            while (rset.next()) {
+                EmployeeDTO row = new EmployeeDTO();
+
+                row.setEMP_ID(rset.getString("EMP_ID"));
+                row.setEMP_NAME(rset.getString("EMP_NAME"));
+                row.setEMP_NO(rset.getString("EMP_NO"));
+                row.setEMAIL(rset.getString("EMAIL"));
+                row.setPHONE(rset.getString("PHONE"));
+                row.setDEPT_CODE(rset.getString("DEPT_CODE"));
+                row.setJOB_CODE(rset.getString("JOB_CODE"));
+                row.setSAL_LEVEL(rset.getString("SAL_LEVEL"));
+                row.setSALARY(rset.getInt("SALARY"));
+                row.setBONUS(rset.getDouble("BONUS"));
+                row.setMANAGER_ID(rset.getString("MANAGER_ID"));
+                row.setHIRE_DATE(rset.getDate("HIRE_DATE"));
+                row.setENT_DATE(rset.getDate("ENT_DATE"));
+                row.setENT_YN(rset.getString("ENT_YN"));
+
+                empList.add(row);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return empList;
+    }
+
+    public List<Map<String, String>> selectByID(Connection con) {
+        Statement stmt = null;
+        ResultSet rset = null;
+
+        List<Map<String, String>> idList = null;
+
+        String query = prop.getProperty("selectByIdEmp");
+        idList = new ArrayList<>();
+
+        try {
+            stmt = con.createStatement();
+            rset = stmt.executeQuery(query);
+
+            // list 형태로 나오니까 while문으로
+            while (rset.next()) {
+                Map<String, String> id = new HashMap<>();
+                id.put(rset.getString("EMP_ID"), rset.getString("EMP_NAME"));
+
+                idList.add(id);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return idList;
+    }
+
+//    public int insertNewEmp(Connection con, String empId, String empName, String  empNo, String jobCode,String salLv ) {
+    public int insertNewEmp(Connection con, EmployeeDTO newEmp ) {
+        PreparedStatement pstmt = null;
+
+        int result = 0;
+
+        String query = prop.getProperty("insertEmp");
+
+        try {
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, newEmp.getEMP_ID());
+            pstmt.setString(2, newEmp.getEMP_NAME());
+            pstmt.setString(3, newEmp.getEMP_NO());
+            pstmt.setString(4, newEmp.getJOB_CODE());
+            pstmt.setString(5, newEmp.getSAL_LEVEL());
+//            pstmt.setString(1, empId);
+//            pstmt.setString(2,empName );
+//            pstmt.setString(3, empNo);
+//            pstmt.setString(4, jobCode);
+//            pstmt.setString(5, salLv);
+
+            result = pstmt.executeUpdate();
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(pstmt); //JDBCTemplate에서 close 만들어야함
+        }
+        return result;
+    }
+
+    public int modifyEmp(Connection con, EmployeeDTO newEmp) {
+        PreparedStatement pstmt = null;
+        int result = 0;
+
+        String query = prop.getProperty("modifyEmp");
+
+        try {
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, newEmp.getDEPT_CODE());
+            pstmt.setString(2, newEmp.getJOB_CODE());
+            pstmt.setString(3, newEmp.getSAL_LEVEL());
+            pstmt.setString(4, newEmp.getEMP_ID());
+
+            result = pstmt.executeUpdate();
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(pstmt);
+            close(con);
+        }
+
+        return result;
+    }
+
+    public int deleteEmp(Connection con) {
+        PreparedStatement pstmt = null;
+        int result = 0;
+
+        try {
+        String query = prop.getProperty("deleteEmp");
+        Scanner sc = new Scanner(System.in);
+        System.out.print("삭제예정 사번 입력 : ");
+        int empId = sc.nextInt();
+
+        pstmt = con.prepareStatement(query);
+        pstmt.setInt(1, empId);
+
+        result = pstmt.executeUpdate();
+
+        if(result >0) {
+            System.out.println("삭제 성공");
+        }else{
+            System.out.println("삭제 실패");
+        }
+
+        } catch (SQLException e) {
+        throw new RuntimeException(e);
+        } finally {
+        close(pstmt);
+        close(con);
+        }
+        return result;
+    }
+}
