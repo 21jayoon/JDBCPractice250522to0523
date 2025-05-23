@@ -1,0 +1,106 @@
+package com.ohgiraffers.run;
+
+import com.ohgiraffers.model.dao.EmployeeDAO;
+import com.ohgiraffers.model.dto.EmployeeDTO;
+
+import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import static com.ohgiraffers.common.JDBCTemplate.getConnection;
+
+public class RunJdbcPractice0522 {
+    public static void main(String[] args) {
+        /*프로젝트 명: jdbc-crud-practice
+        패키지 구조: 수업시간에 다뤘던 것을 참고하여 명확하게 구분
+         2. 사용 기술 : Java  /  MySQL   /  JDBC   /   DAO 패턴 적용 필수
+         3. CRUD 요구사항
+        직원 전체조회 - selectAllEmp
+        직원 상세조회 - selectByIdEmp
+        직원 등록 - insertEmp
+        직원 수정 - modifyEmp
+        직원 삭제 - deleteEmp
+        4. 작업 완료 후:   Git에 push &   팀원 간의 코드 리뷰*/
+
+        Connection con = getConnection();
+        EmployeeDAO registDAO = new EmployeeDAO();
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("=====사원 조회를 위한 정보를 입력해주세요=====");
+        System.out.println("1.사원 전체 조회");
+        System.out.println("2.사번과 사원 간단 조회");
+        System.out.println("3.새 사원 추가");
+        System.out.println("4.정보 업데이트");
+        System.out.println("5.정보 삭제");
+        System.out.print("번호 입력 : ");
+        int num = sc.nextInt();
+
+        switch (num) {
+            case 1 :
+                System.out.println("사원 전체 조회");
+                List<EmployeeDTO> empList = registDAO.selectAllEmp(con);
+                for(EmployeeDTO empAll : empList) {
+                    System.out.println(empAll);
+                }
+                break;
+            case 2 :
+                System.out.println("사번과 이름 조회");
+                List<Map<String,String>> idList = registDAO.selectByID(con);
+                for(Map<String, String> idEmp : idList) {
+                    System.out.println(idEmp);
+                }
+                break;
+            case 3:
+                sc.nextLine();
+                System.out.print("새 사원 사번 : ");
+                String empId = sc.nextLine();
+                System.out.print("새 사원 이름 : ");
+                String empName = sc.nextLine();
+                System.out.print("새 사원 주민번호 : ");
+                String empNo = sc.nextLine();
+                System.out.print("새 사원 직급(J1~J7) : ");
+                String jobCode = sc.nextLine();
+                System.out.print("새 사원 급여 단계(S1~S6) : ");
+                String salLv = sc.nextLine();
+
+                EmployeeDTO newEmployee = new EmployeeDTO(empId, empName, empNo, jobCode, salLv);
+                int result = registDAO.insertNewEmp(con,newEmployee);
+//                int result = registDAO.insertNewEmp(con, empId, empName, empNo, jobCode,salLv);
+                if (result > 0) {
+                    System.out.println("입력 성공");
+                } else {
+                    System.out.println("입력 실패");
+                }
+                break;
+
+            case 4 :
+                sc.nextLine();
+                System.out.print("변경할 사번을 입력하세요(2XX) :");
+                String empNum = sc.nextLine();
+                System.out.print("변경할 부서코드 입력하세요(D1...D9) :");
+                String empDept = sc.nextLine();
+                System.out.print("변경할 직급코드 입력(J1...J7) : ");
+                String empJobCode = sc.nextLine();
+                System.out.print("변경할 급여레벨(S1...S6) : ");
+                String empSalLv = sc.nextLine();
+
+                EmployeeDTO newEmployee2 = new EmployeeDTO(empNum, empDept, empJobCode, empSalLv);
+                int update = registDAO.modifyEmp(con, newEmployee2);
+                if (update > 0) {
+                    System.out.println("수정 성공");
+                } else {
+                    System.out.println("수정 실패");
+                }
+                break;
+
+            case 5 :
+                System.out.println("사원 정보 삭제");
+                int delete = registDAO.deleteEmp(con);
+                break;
+            default :
+                System.out.println("해당 선택지는 선택 불가합니다.");
+                return;
+        }
+    }
+}
